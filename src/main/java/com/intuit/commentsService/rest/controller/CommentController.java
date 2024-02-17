@@ -7,14 +7,14 @@ import com.intuit.commentsService.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-//import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
-//@EnableSwagger2
+//@EnableOpenApi
 public class CommentController {
 
     private final CommentService commentService;
