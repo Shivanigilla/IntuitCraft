@@ -1,7 +1,7 @@
 package com.intuit.commentsService.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.intuit.commentsService.util.TimeUtility;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -21,7 +21,8 @@ public class Comment {
     private String postId;
     private String parentCommentId;
     private String content;
-    private Long timestamp;
+    @Builder.Default
+    private Long timestamp= TimeUtility.getCurrentTimeStamp();
     @Builder.Default
     private Set<LikeDislike> likes=new HashSet<>();
     @Builder.Default

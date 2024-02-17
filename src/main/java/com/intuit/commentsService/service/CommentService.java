@@ -11,4 +11,7 @@ public interface CommentService {
     void dislikeComment(String commentId, String userId);
     List<Comment> getReplies(String commentId, int n);
     List<Comment> getFirstLevelComments(String postId, int n);
+
+    List<String> getLikes(String commentId);
+    List<String > getDislikes(String commentId);
 }
