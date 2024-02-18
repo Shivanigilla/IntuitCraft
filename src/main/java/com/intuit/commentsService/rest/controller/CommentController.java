@@ -2,6 +2,7 @@ package com.intuit.commentsService.rest.controller;
 
 import com.intuit.commentsService.DTO.CommentRequest;
 import com.intuit.commentsService.DTO.ReplyRequest;
+import com.intuit.commentsService.exception.CommentsServiceException;
 import com.intuit.commentsService.model.Comment;
 import com.intuit.commentsService.service.CommentService;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+//import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 import static com.intuit.commentsService.constant.ExceptionConstant.*;
@@ -19,7 +21,6 @@ import static com.intuit.commentsService.constant.ExceptionConstant.*;
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
 @Slf4j
-//@EnableOpenApi
 public class CommentController {
 
     private final CommentService commentService;
@@ -75,6 +76,8 @@ public class CommentController {
             commentService.likeComment(commentId, userId);
         }catch (Exception e) {
             log.info(COMMENT_LIKE_ERROR, e);
+            throw new CommentsServiceException(COMMENT_LIKE_ERROR, e);
+
         }
     }
 
@@ -84,6 +87,7 @@ public class CommentController {
             commentService.dislikeComment(commentId, userId);
         }catch (Exception e) {
             log.info(COMMENT_DISLIKE_ERROR, e);
+            throw new CommentsServiceException(COMMENT_DISLIKE_ERROR, e);
         }
     }
 
