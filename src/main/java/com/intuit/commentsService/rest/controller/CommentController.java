@@ -5,14 +5,13 @@ import com.intuit.commentsService.DTO.ReplyRequest;
 import com.intuit.commentsService.exception.CommentsServiceException;
 import com.intuit.commentsService.model.Comment;
 import com.intuit.commentsService.service.CommentService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-//import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 import static com.intuit.commentsService.constant.ExceptionConstant.*;
