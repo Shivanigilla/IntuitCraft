@@ -12,9 +12,9 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentDTO {
-    @NotBlank
+    @NotBlank(message = "Please provide valid userId")
     private String userId;
 
-    @NotBlank
+    @NotBlank(message = "Please provide valid content")
     private String content;
 }

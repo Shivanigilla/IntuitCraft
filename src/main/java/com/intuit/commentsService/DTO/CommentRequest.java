@@ -14,6 +14,6 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @SuperBuilder
 public class CommentRequest extends CommentDTO{
-    @NotBlank
+    @NotBlank(message = "Please provide postID")
     private String postId;
 }

@@ -13,6 +13,6 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReplyRequest extends CommentDTO{
-    @NotBlank
+    @NotBlank(message = "Please provide valid parentCommentId")
     private String parentCommentId;
 }

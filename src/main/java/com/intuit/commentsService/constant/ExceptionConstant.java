@@ -14,4 +14,5 @@ public interface ExceptionConstant {
     String REPLY_RETRIEVE_ERROR = "Error getting replies to comment %s";
     String FIRST_LEVEL_COMMENT_RETRIEVE_ERROR = "Error getting FirstLevelComments to post: %s";
     String EXCEEDED_REQUESTS_PER_SECOND = "Exceeded the limit of requests, Please retry in some time";
+    String EXCEPTION_FORMAT = "%s %s";
 }

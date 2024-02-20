@@ -11,10 +11,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.intuit.commentsService.constant.CommentServiceConstant.MAX_NESTING_LEVEL;
 import static com.intuit.commentsService.constant.CommentServiceConstant.TIME_STAMP;
 import static com.intuit.commentsService.constant.ExceptionConstant.*;
 import static com.intuit.commentsService.util.CommentUtility.generateId;
@@ -28,14 +30,12 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment addComment(String userId, String content, String postId) {
         try {
-            // Create a new comment with a generated commentId and timestamp
             Comment comment = Comment.builder()
                     .userId(userId)
                     .content(content)
                     .postId(postId)
                     .commentId(generateId())
                     .build();
-            // Save the comment to the database
             commentRepository.save(comment);
 
             return comment;
@@ -66,6 +66,7 @@ public class CommentServiceImpl implements CommentService {
             }
             return reply;
         } catch (Exception e) {
+            if(e instanceof CommentNotFoundException) throw e;
             throw new CommentsServiceException(String.format(ADD_REPLY_ERROR,parentCommentId), e);
         }
     }
@@ -86,6 +87,7 @@ public class CommentServiceImpl implements CommentService {
                 commentRepository.save(comment);
             }
         } catch (Exception e) {
+            if(e instanceof CommentNotFoundException) throw e;
             throw new CommentsServiceException(COMMENT_LIKE_ERROR, e);
         }
     }
@@ -105,6 +107,7 @@ public class CommentServiceImpl implements CommentService {
                 commentRepository.save(comment);
             }
         } catch (Exception e) {
+            if(e instanceof CommentNotFoundException) throw e;
             throw new CommentsServiceException(COMMENT_DISLIKE_ERROR, e);
         }
     }
@@ -115,11 +118,29 @@ public class CommentServiceImpl implements CommentService {
             Sort sort = Sort.by(Sort.Direction.DESC, TIME_STAMP); // Sort comments by timestamp in descending order
             Pageable pageable = PageRequest.of(page, pageSize, sort);
             // Fetch replies for a specific comment, limiting to 'n'
-            return commentRepository.findByParentCommentId(commentId, pageable).stream()
-                    .limit(pageSize)
-                    .collect(Collectors.toList());
+            return getNestedReplies(commentId,pageable,MAX_NESTING_LEVEL);
         } catch (Exception e) {
             throw new CommentsServiceException( String.format(REPLY_RETRIEVE_ERROR,commentId), e);
+        }
+    }
+
+    public List<Comment> getNestedReplies(String commentId,Pageable pageable , int nestingLevel) {
+        try {
+            // Fetch immediate replies with pagination
+            List<Comment> immediateReplies = commentRepository.findByParentCommentId(commentId, pageable);
+
+            // Fetch nested replies for each immediate reply up to the specified nesting level
+            List<Comment> nestedReplies = new ArrayList<>();
+            if (nestingLevel > 0) {
+                for (Comment immediateReply : immediateReplies) {
+                    List<Comment> nestedRepliesForImmediateReply = getNestedReplies(immediateReply.getCommentId(),pageable, nestingLevel - 1);
+                    immediateReply.setReplies(nestedRepliesForImmediateReply.stream().collect(Collectors.toSet()));
+                }
+            }
+
+            return immediateReplies;
+        } catch (Exception e) {
+            throw new CommentsServiceException(String.format(REPLY_RETRIEVE_ERROR, commentId), e);
         }
     }
 
@@ -147,6 +168,7 @@ public class CommentServiceImpl implements CommentService {
                 throw new CommentNotFoundException(String.format(COMMENT_NOT_FOUND,commentId));
             }
         } catch (Exception e) {
+            if(e instanceof CommentNotFoundException) throw e;
             throw new CommentsServiceException(LIKE_RETRIEVE_ERROR, e);
         }
     }
@@ -161,6 +183,7 @@ public class CommentServiceImpl implements CommentService {
                 throw new CommentNotFoundException(String.format(COMMENT_NOT_FOUND,commentId));
             }
         } catch (Exception e) {
+            if(e instanceof CommentNotFoundException) throw e;
             throw new CommentsServiceException(DISLIKE_RETRIEVE_ERROR, e);
         }
     }

@@ -5,8 +5,6 @@ import com.intuit.commentsService.DTO.ReplyRequest;
 import com.intuit.commentsService.exception.CommentNotFoundException;
 import com.intuit.commentsService.exception.CommentsServiceException;
 import com.intuit.commentsService.model.Comment;
-import com.intuit.commentsService.model.LikeDisLikeType;
-import com.intuit.commentsService.model.LikeDislike;
 import com.intuit.commentsService.service.CommentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -134,7 +132,8 @@ public class CommentControllerTest {
 
         // Assert
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals(String.format(FIRST_LEVEL_COMMENT_RETRIEVE_ERROR, postId), response.getBody());
+        assertTrue(response.getBody().toString().contains(String.format(FIRST_LEVEL_COMMENT_RETRIEVE_ERROR, postId)));
+
     }
 
 
@@ -172,7 +171,7 @@ public class CommentControllerTest {
 
         // Assert
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals(String.format(REPLY_RETRIEVE_ERROR, commentId), response.getBody());
+        assertTrue(response.getBody().toString().contains(String.format(REPLY_RETRIEVE_ERROR, commentId)));
     }
 
     @Test
@@ -265,7 +264,8 @@ public class CommentControllerTest {
         // Assert
         assertEquals(500, responseEntity.getStatusCodeValue());
         assertNotNull(responseEntity.getBody());
-        assertEquals(LIKE_RETRIEVE_ERROR, responseEntity.getBody());
+        assertTrue(responseEntity.getBody().toString().contains(LIKE_RETRIEVE_ERROR));
+
 
         // Verify
         verify(commentService, times(1)).getLikes(commentId);
@@ -308,7 +308,8 @@ public class CommentControllerTest {
         // Assert
         assertEquals(500, responseEntity.getStatusCodeValue());
         assertNotNull(responseEntity.getBody());
-        assertEquals(DISLIKE_RETRIEVE_ERROR, responseEntity.getBody());
+        assertTrue(responseEntity.getBody().toString().contains(String.format(DISLIKE_RETRIEVE_ERROR, commentId)));
+
 
         // Verify
         verify(commentService, times(1)).getDislikes(commentId);

@@ -108,7 +108,7 @@ class CommentServiceImplTest {
         when(commentRepository.findById(eq(parentCommentId))).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(CommentsServiceException.class, () -> {
+        assertThrows(CommentNotFoundException.class, () -> {
             commentService.addReply(parentCommentId, userId, content);
         });
 
@@ -376,7 +376,7 @@ class CommentServiceImplTest {
         when(commentRepository.findById(eq(commentId))).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(CommentsServiceException.class, () -> {
+        assertThrows(CommentNotFoundException.class, () -> {
             commentService.getLikes(commentId);
         });
 
@@ -427,7 +427,7 @@ class CommentServiceImplTest {
         when(commentRepository.findById(eq(NON_EXISTING_COMMENT_ID))).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(CommentsServiceException.class, () -> {
+        assertThrows(CommentNotFoundException.class, () -> {
             commentService.getDislikes(NON_EXISTING_COMMENT_ID);
         });
 

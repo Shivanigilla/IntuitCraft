@@ -7,11 +7,11 @@ import com.intuit.commentsService.model.Comment;
 import com.intuit.commentsService.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/addComment")
-    public ResponseEntity<Object> addComment(@RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<Object> addComment(@Valid @RequestBody  CommentRequest commentRequest) {
         try {
             Comment comment = commentService.addComment(commentRequest.getUserId(), commentRequest.getContent(), commentRequest.getPostId());
             return ResponseEntity.ok(comment);
@@ -38,7 +38,7 @@ public class CommentController {
     }
 
     @PostMapping("/addReply")
-    public ResponseEntity<Object> addReply(@RequestBody ReplyRequest replyRequest) {
+    public ResponseEntity<Object> addReply(@Valid @RequestBody ReplyRequest replyRequest) {
         try {
             Comment reply = commentService.addReply(replyRequest.getParentCommentId(), replyRequest.getUserId(), replyRequest.getContent());
             return ResponseEntity.ok(reply);
@@ -57,7 +57,7 @@ public class CommentController {
             return ResponseEntity.ok(comments);
         }catch (Exception e) {
             log.info(String.format(FIRST_LEVEL_COMMENT_RETRIEVE_ERROR,postId), e);
-            return ResponseEntity.internalServerError().body(String.format(FIRST_LEVEL_COMMENT_RETRIEVE_ERROR,postId));
+            return ResponseEntity.internalServerError().body(String.format(EXCEPTION_FORMAT,String.format(FIRST_LEVEL_COMMENT_RETRIEVE_ERROR,postId),e.getMessage()));
         }
     }
 
@@ -70,7 +70,8 @@ public class CommentController {
             return ResponseEntity.ok(comments);
         }catch (Exception e) {
             log.info(String.format(REPLY_RETRIEVE_ERROR,commentId), e);
-            return ResponseEntity.internalServerError().body(String.format(REPLY_RETRIEVE_ERROR,commentId));
+            return ResponseEntity.internalServerError().body(String.format(EXCEPTION_FORMAT,String.format(REPLY_RETRIEVE_ERROR,commentId),e.getMessage()));
+
         }
     }
 
@@ -103,7 +104,8 @@ public class CommentController {
             return ResponseEntity.ok(likes);
         }  catch (Exception e) {
             log.error(LIKE_RETRIEVE_ERROR, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LIKE_RETRIEVE_ERROR);
+            return ResponseEntity.internalServerError().body(String.format(EXCEPTION_FORMAT,LIKE_RETRIEVE_ERROR,e.getMessage()));
+
         }
     }
 
@@ -114,7 +116,7 @@ public class CommentController {
             return ResponseEntity.ok(dislikes);
         }  catch (Exception e) {
             log.error(DISLIKE_RETRIEVE_ERROR, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(DISLIKE_RETRIEVE_ERROR);
+            return ResponseEntity.internalServerError().body(String.format(EXCEPTION_FORMAT,DISLIKE_RETRIEVE_ERROR,e.getMessage()));
         }
     }
 
