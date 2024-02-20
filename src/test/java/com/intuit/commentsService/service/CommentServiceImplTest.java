@@ -283,7 +283,7 @@ class CommentServiceImplTest {
         when(commentRepository.findByParentCommentId(eq(commentId), any())).thenReturn(expectedReplies);
 
         // Act
-        List<Comment> actualReplies = commentService.getReplies(commentId, n);
+        List<Comment> actualReplies = commentService.getReplies(commentId, 0, n);
 
         // Assert
         assertNotNull(actualReplies);
@@ -301,7 +301,7 @@ class CommentServiceImplTest {
 
         // Act & Assert
         assertThrows(CommentsServiceException.class, () -> {
-            commentService.getReplies(commentId, n);
+            commentService.getReplies(commentId, 0, n);
         });
 
         verify(commentRepository, times(1)).findByParentCommentId(eq(commentId), any());
@@ -321,7 +321,7 @@ class CommentServiceImplTest {
         when(commentRepository.findByPostIdAndParentCommentIdIsNull(eq(postId), any())).thenReturn(expectedComments);
 
         // Act
-        List<Comment> actualComments = commentService.getFirstLevelComments(postId, n);
+        List<Comment> actualComments = commentService.getFirstLevelComments(postId, n, n);
 
         // Assert
         assertNotNull(actualComments);
@@ -339,7 +339,7 @@ class CommentServiceImplTest {
 
         // Act & Assert
         assertThrows(CommentsServiceException.class, () -> {
-            commentService.getFirstLevelComments(postId, n);
+            commentService.getFirstLevelComments(postId, n, n);
         });
 
         verify(commentRepository, times(1)).findByPostIdAndParentCommentIdIsNull(eq(postId), any());

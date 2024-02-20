@@ -7,6 +7,7 @@ import com.intuit.commentsService.model.Comment;
 import com.intuit.commentsService.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,9 +49,11 @@ public class CommentController {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getFirstLevelComments(@RequestParam String postId,@RequestParam(defaultValue = "5") int n) {
+    public ResponseEntity<Object> getFirstLevelComments(@RequestParam String postId,
+                                                        @RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "5") int pageSize) {
         try {
-            List<Comment> comments = commentService.getFirstLevelComments(postId, n);
+            List<Comment> comments = commentService.getFirstLevelComments(postId, page, pageSize);
             return ResponseEntity.ok(comments);
         }catch (Exception e) {
             log.info(String.format(FIRST_LEVEL_COMMENT_RETRIEVE_ERROR,postId), e);
@@ -59,9 +62,11 @@ public class CommentController {
     }
 
     @GetMapping("/{commentId}/replies")
-    public ResponseEntity<Object> getReplies(@PathVariable @NotBlank String commentId, @RequestParam(defaultValue = "5") int n) {
+    public ResponseEntity<Object> getReplies(@PathVariable @NotBlank String commentId,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "5") int pageSize) {
         try {
-            List<Comment> comments = commentService.getReplies(commentId, n);
+            List<Comment> comments = commentService.getReplies(commentId, page, pageSize);
             return ResponseEntity.ok(comments);
         }catch (Exception e) {
             log.info(String.format(REPLY_RETRIEVE_ERROR,commentId), e);
@@ -90,5 +95,27 @@ public class CommentController {
         }
     }
 
+
+    @GetMapping("/{commentId}/likedUsers")
+    public ResponseEntity<Object> getLikes(@PathVariable @NotBlank String commentId) {
+        try {
+            List<String> likes = commentService.getLikes(commentId);
+            return ResponseEntity.ok(likes);
+        }  catch (Exception e) {
+            log.error(LIKE_RETRIEVE_ERROR, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LIKE_RETRIEVE_ERROR);
+        }
+    }
+
+    @GetMapping("/{commentId}/disLikedUsers")
+    public ResponseEntity<Object> getDisLikes(@PathVariable @NotBlank String commentId) {
+        try {
+            List<String> dislikes = commentService.getDislikes(commentId);
+            return ResponseEntity.ok(dislikes);
+        }  catch (Exception e) {
+            log.error(DISLIKE_RETRIEVE_ERROR, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(DISLIKE_RETRIEVE_ERROR);
+        }
+    }
 
 }

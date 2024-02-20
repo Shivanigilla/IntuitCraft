@@ -6,6 +6,8 @@ import com.intuit.commentsService.model.Comment;
 import com.intuit.commentsService.model.LikeDislike;
 import com.intuit.commentsService.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -108,12 +110,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> getReplies(String commentId, int n) {
+    public List<Comment> getReplies(String commentId, int page, int pageSize) {
         try {
-            Sort sort = Sort.by(Sort.Direction.DESC, TIME_STAMP);
+            Sort sort = Sort.by(Sort.Direction.DESC, TIME_STAMP); // Sort comments by timestamp in descending order
+            Pageable pageable = PageRequest.of(page, pageSize, sort);
             // Fetch replies for a specific comment, limiting to 'n'
-            return commentRepository.findByParentCommentId(commentId, sort).stream()
-                    .limit(n)
+            return commentRepository.findByParentCommentId(commentId, pageable).stream()
+                    .limit(pageSize)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new CommentsServiceException( String.format(REPLY_RETRIEVE_ERROR,commentId), e);
@@ -121,11 +124,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> getFirstLevelComments(String postId, int n) {
+    public List<Comment> getFirstLevelComments(String postId, int page, int pageSize) {
         try {
             Sort sort = Sort.by(Sort.Direction.DESC, TIME_STAMP); // Sort comments by timestamp in descending order
-            return commentRepository.findByPostIdAndParentCommentIdIsNull(postId, sort).stream()
-                    .limit(n)
+            Pageable pageable = PageRequest.of(page, pageSize, sort);
+
+            return commentRepository.findByPostIdAndParentCommentIdIsNull(postId, pageable).stream()
+                    .limit(pageSize)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new CommentsServiceException(String.format(FIRST_LEVEL_COMMENT_RETRIEVE_ERROR,postId), e);

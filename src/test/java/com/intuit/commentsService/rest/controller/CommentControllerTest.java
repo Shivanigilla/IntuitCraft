@@ -2,8 +2,11 @@ package com.intuit.commentsService.rest.controller;
 
 import com.intuit.commentsService.DTO.CommentRequest;
 import com.intuit.commentsService.DTO.ReplyRequest;
+import com.intuit.commentsService.exception.CommentNotFoundException;
 import com.intuit.commentsService.exception.CommentsServiceException;
 import com.intuit.commentsService.model.Comment;
+import com.intuit.commentsService.model.LikeDisLikeType;
+import com.intuit.commentsService.model.LikeDislike;
 import com.intuit.commentsService.service.CommentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,8 +22,7 @@ import java.util.List;
 
 import static com.intuit.commentsService.constant.ExceptionConstant.*;
 import static com.intuit.commentsService.constant.MockConstant.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -103,13 +105,14 @@ public class CommentControllerTest {
     public void getFirstLevelComments_Success() {
         // Arrange
         String postId = POST_ID;
-        int n = 5;
+        int pageSize = 5;
+        int page = 0;
         List<Comment> firstLevelComments = Arrays.asList(Comment.builder().build(), Comment.builder().build());
 
-        when(commentService.getFirstLevelComments(eq(postId), eq(n))).thenReturn(firstLevelComments);
+        when(commentService.getFirstLevelComments(eq(postId), eq(page), eq(pageSize))).thenReturn(firstLevelComments);
 
         // Act
-        ResponseEntity<Object> response = commentController.getFirstLevelComments(postId, n);
+        ResponseEntity<Object> response = commentController.getFirstLevelComments(postId, page, pageSize);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -120,13 +123,14 @@ public class CommentControllerTest {
     public void getFirstLevelComments_Exception() {
         // Arrange
         String postId = POST_ID;
-        int n = 5;
+        int pageSize = 5;
+        int page = 0;
 
-        when(commentService.getFirstLevelComments(eq(postId), eq(n)))
+        when(commentService.getFirstLevelComments(eq(postId), eq(page), eq(pageSize)))
                 .thenThrow(new CommentsServiceException(String.format(FIRST_LEVEL_COMMENT_RETRIEVE_ERROR, postId)));
 
         // Act
-        ResponseEntity<Object> response = commentController.getFirstLevelComments(postId, n);
+        ResponseEntity<Object> response = commentController.getFirstLevelComments(postId, page, pageSize);
 
         // Assert
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -138,14 +142,15 @@ public class CommentControllerTest {
     public void getReplies_Success() {
         // Arrange
         String commentId = COMMENT_ID;
-        int n = 5;
+        int pageSize = 5;
+        int page = 0;
         List<Comment> replies = Arrays.asList(Comment.builder().build(), Comment.builder().build());
 
 
-        when(commentService.getReplies(eq(commentId), eq(n))).thenReturn(replies);
+        when(commentService.getReplies(eq(commentId), eq(page), eq(pageSize))).thenReturn(replies);
 
         // Act
-        ResponseEntity<Object> response = commentController.getReplies(commentId, n);
+        ResponseEntity<Object> response = commentController.getReplies(commentId, page,pageSize);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -156,13 +161,14 @@ public class CommentControllerTest {
     public void getReplies_Exception() {
         // Arrange
         String commentId = COMMENT_ID;
-        int n = 5;
+        int pageSize = 5;
+        int page = 0;
 
-        when(commentService.getReplies(eq(commentId), eq(n)))
+        when(commentService.getReplies(eq(commentId), eq(page), eq(pageSize)))
                 .thenThrow(new CommentsServiceException(String.format(REPLY_RETRIEVE_ERROR, commentId)));
 
         // Act
-        ResponseEntity<Object> response = commentController.getReplies(commentId, n);
+        ResponseEntity<Object> response = commentController.getReplies(commentId, page, pageSize);
 
         // Assert
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -222,4 +228,91 @@ public class CommentControllerTest {
         assertThrows(CommentsServiceException.class, () -> commentController.dislikeComment(commentId, userId));
 
     }
+
+
+    @Test
+    void getLikes_Success() {
+        // Arrange
+        String commentId = COMMENT_ID;
+        when(commentService.getLikes(commentId)).thenReturn(List.of(USER1, USER2));
+
+        // Act
+        ResponseEntity<Object> responseEntity = commentController.getLikes(commentId);
+
+        // Assert
+        assertEquals(200, responseEntity.getStatusCodeValue());
+        assertNotNull(responseEntity.getBody());
+        assertTrue(responseEntity.getBody() instanceof List);
+        List<String> likes = (List<String>) responseEntity.getBody();
+        assertEquals(2, likes.size());
+        assertTrue(likes.contains(USER1));
+        assertTrue(likes.contains(USER2));
+
+        // Verify
+        verify(commentService, times(1)).getLikes(commentId);
+        verifyNoMoreInteractions(commentService);
+    }
+
+    @Test
+    void getLikes_CommentNotFound() {
+        // Arrange
+        String commentId = COMMENT_ID;
+        when(commentService.getLikes(commentId)).thenThrow(new CommentNotFoundException(LIKE_RETRIEVE_ERROR));
+
+        // Act
+        ResponseEntity<Object> responseEntity = commentController.getLikes(commentId);
+
+        // Assert
+        assertEquals(500, responseEntity.getStatusCodeValue());
+        assertNotNull(responseEntity.getBody());
+        assertEquals(LIKE_RETRIEVE_ERROR, responseEntity.getBody());
+
+        // Verify
+        verify(commentService, times(1)).getLikes(commentId);
+        verifyNoMoreInteractions(commentService);
+    }
+
+
+    @Test
+    void getDisLikes_Success() {
+        // Arrange
+        String commentId = COMMENT_ID;
+        when(commentService.getDislikes(commentId)).thenReturn(List.of(USER1, USER2));
+
+        // Act
+        ResponseEntity<Object> responseEntity = commentController.getDisLikes(commentId);
+
+        // Assert
+        assertEquals(200, responseEntity.getStatusCodeValue());
+        assertNotNull(responseEntity.getBody());
+        assertTrue(responseEntity.getBody() instanceof List);
+        List<String> disLikes = (List<String>) responseEntity.getBody();
+        assertEquals(2, disLikes.size());
+        assertTrue(disLikes.contains(USER1));
+        assertTrue(disLikes.contains(USER2));
+
+        // Verify
+        verify(commentService, times(1)).getDislikes(commentId);
+        verifyNoMoreInteractions(commentService);
+    }
+
+    @Test
+    void getDisLikes_CommentNotFound() {
+        // Arrange
+        String commentId = COMMENT_ID;
+        when(commentService.getDislikes(commentId)).thenThrow(new CommentNotFoundException(DISLIKE_RETRIEVE_ERROR));
+
+        // Act
+        ResponseEntity<Object> responseEntity = commentController.getDisLikes(commentId);
+
+        // Assert
+        assertEquals(500, responseEntity.getStatusCodeValue());
+        assertNotNull(responseEntity.getBody());
+        assertEquals(DISLIKE_RETRIEVE_ERROR, responseEntity.getBody());
+
+        // Verify
+        verify(commentService, times(1)).getDislikes(commentId);
+        verifyNoMoreInteractions(commentService);
+    }
+
 }
